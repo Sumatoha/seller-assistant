@@ -31,7 +31,7 @@ func Load() (*Config, error) {
 		OpenAIAPIKey:      getEnv("OPENAI_API_KEY", ""),
 		EncryptionKey:     getEnv("ENCRYPTION_KEY", ""),
 		Port:              getEnv("PORT", "8080"),
-		Environment:       getEnv("ENVIRONMENT", "development"),
+		Environment:       getEnv("ENVIRONMENT", "production"),
 		SyncIntervalHours: getEnvAsInt("SYNC_INTERVAL_HOURS", 6),
 		LogLevel:          getEnv("LOG_LEVEL", "info"),
 	}
