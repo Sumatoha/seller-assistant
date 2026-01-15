@@ -7,14 +7,9 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 build: ## Build both bot and worker binaries
-	@echo "Building bot..."
-	@go build -o bin/bot cmd/bot/main.go
 	@echo "Building worker..."
 	@go build -o bin/worker cmd/worker/main.go
 	@echo "Build complete!"
-
-run-bot: ## Run the Telegram bot
-	@go run cmd/bot/main.go
 
 run-worker: ## Run the background worker
 	@go run cmd/worker/main.go

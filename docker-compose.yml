@@ -16,23 +16,6 @@ services:
       timeout: 5s
       retries: 5
 
-  bot:
-    build: .
-    container_name: seller-assistant-bot
-    command: ./bot
-    environment:
-      MONGODB_URI: mongodb://mongodb:27017
-      MONGODB_DATABASE: seller_assistant
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      LOG_LEVEL: info
-      ENVIRONMENT: production
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    restart: unless-stopped
-
   worker:
     build: .
     container_name: seller-assistant-worker

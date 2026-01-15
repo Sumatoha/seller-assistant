@@ -17,7 +17,6 @@ RUN go mod download
 COPY . .
 
 # Build all binaries
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /bot ./cmd/bot
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /worker ./cmd/worker
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /api ./cmd/api
 
@@ -30,12 +29,8 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /root/
 
 # Copy binaries from builder
-COPY --from=builder /bot .
 COPY --from=builder /worker .
 COPY --from=builder /api .
 
 # Expose port (optional, for health checks)
 EXPOSE 8080
-
-# Default command (can be overridden)
-CMD ["./bot"]
