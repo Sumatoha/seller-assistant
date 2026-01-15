@@ -1,0 +1,299 @@
+============================================================
+KASPI SELLER ASSISTANT - REST API ENDPOINTS
+============================================================
+
+Base URL: http://localhost:8080/api/v1
+
+============================================================
+AUTHENTICATION
+============================================================
+
+1. Login / Register
+   POST /auth/login
+
+   Request Body:
+   {
+     "telegram_id": 123456789,
+     "username": "john_doe"
+   }
+
+   Response:
+   {
+     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "user": {
+       "id": "507f1f77bcf86cd799439011",
+       "telegram_id": 123456789,
+       "username": "john_doe",
+       "language": "ru",
+       "auto_reply_enabled": false,
+       "auto_dumping_enabled": false
+     }
+   }
+
+2. Get Current User
+   GET /auth/me
+   Headers: Authorization: Bearer <token>
+
+   Response:
+   {
+     "id": "507f1f77bcf86cd799439011",
+     "telegram_id": 123456789,
+     "username": "john_doe",
+     ...
+   }
+
+============================================================
+USER MANAGEMENT
+============================================================
+
+3. Get Profile
+   GET /user/profile
+   Headers: Authorization: Bearer <token>
+
+4. Update Settings
+   PATCH /user/settings
+   Headers: Authorization: Bearer <token>
+
+   Request Body (all fields optional):
+   {
+     "auto_reply_enabled": true,
+     "auto_dumping_enabled": true,
+     "language": "ru"
+   }
+
+============================================================
+KASPI API KEY
+============================================================
+
+5. Get Kaspi Key
+   GET /kaspi-key
+   Headers: Authorization: Bearer <token>
+
+   Response:
+   {
+     "id": "507f1f77bcf86cd799439011",
+     "merchant_id": "MERCHANT123",
+     "is_active": true,
+     "created_at": "2024-01-15 10:30:00"
+   }
+
+6. Create/Update Kaspi Key
+   POST /kaspi-key
+   Headers: Authorization: Bearer <token>
+
+   Request Body:
+   {
+     "api_key": "your_kaspi_api_key",
+     "merchant_id": "MERCHANT123"
+   }
+
+7. Delete Kaspi Key
+   DELETE /kaspi-key
+   Headers: Authorization: Bearer <token>
+
+============================================================
+PRODUCTS
+============================================================
+
+8. Get All Products
+   GET /products
+   Headers: Authorization: Bearer <token>
+
+   Response:
+   {
+     "products": [...],
+     "count": 42
+   }
+
+9. Get Single Product
+   GET /products/:id
+   Headers: Authorization: Bearer <token>
+
+10. Get Low Stock Products
+    GET /products/low-stock
+    Headers: Authorization: Bearer <token>
+
+    Response:
+    {
+      "products": [...],
+      "count": 5
+    }
+
+11. Get Products with Dumping Enabled
+    GET /products/dumping
+    Headers: Authorization: Bearer <token>
+
+12. Enable Price Dumping
+    POST /products/:id/dumping/enable
+    Headers: Authorization: Bearer <token>
+
+    Request Body:
+    {
+      "min_price": 15000
+    }
+
+13. Disable Price Dumping
+    POST /products/:id/dumping/disable
+    Headers: Authorization: Bearer <token>
+
+============================================================
+REVIEWS
+============================================================
+
+14. Get All Reviews
+    GET /reviews?limit=50
+    Headers: Authorization: Bearer <token>
+
+    Response:
+    {
+      "reviews": [...],
+      "count": 25
+    }
+
+15. Get Single Review
+    GET /reviews/:id
+    Headers: Authorization: Bearer <token>
+
+16. Get Pending Reviews (without AI response)
+    GET /reviews/pending
+    Headers: Authorization: Bearer <token>
+
+17. Generate AI Reply
+    POST /reviews/:id/generate-reply
+    Headers: Authorization: Bearer <token>
+
+    Request Body:
+    {
+      "language": "ru"  // or "kk" for Kazakh
+    }
+
+    Response:
+    {
+      "message": "AI response generated successfully",
+      "review": {...},
+      "ai_response": "Спасибо за ваш отзыв!..."
+    }
+
+18. Update AI Reply (manual edit)
+    PATCH /reviews/:id/reply
+    Headers: Authorization: Bearer <token>
+
+    Request Body:
+    {
+      "ai_response": "Your custom response text"
+    }
+
+============================================================
+DASHBOARD
+============================================================
+
+19. Get Dashboard Stats
+    GET /dashboard/stats
+    Headers: Authorization: Bearer <token>
+
+    Response:
+    {
+      "total_products": 42,
+      "low_stock_count": 5,
+      "dumping_enabled_count": 10,
+      "total_reviews": 128,
+      "pending_replies": 8,
+      "average_rating": 4.5,
+      "total_inventory_value": 1250000
+    }
+
+20. Get Dashboard Overview
+    GET /dashboard/overview
+    Headers: Authorization: Bearer <token>
+
+    Response:
+    {
+      "total_products": 42,
+      "low_stock": [...],
+      "dumping_products": [...],
+      "recent_reviews": [...],
+      "pending_reviews": [...],
+      "low_stock_count": 5,
+      "dumping_count": 10,
+      "pending_count": 8
+    }
+
+============================================================
+HEALTH CHECK
+============================================================
+
+21. Health Check (no auth required)
+    GET /health
+
+    Response:
+    {
+      "status": "ok"
+    }
+
+============================================================
+AUTHENTICATION
+============================================================
+
+All protected endpoints require JWT token in Authorization header:
+Authorization: Bearer <your_jwt_token>
+
+Get the token from /auth/login endpoint.
+Token expires after 7 days.
+
+============================================================
+ERROR RESPONSES
+============================================================
+
+400 Bad Request:
+{
+  "error": "Invalid request",
+  "details": "validation error message"
+}
+
+401 Unauthorized:
+{
+  "error": "Authorization header required"
+}
+
+403 Forbidden:
+{
+  "error": "Access denied"
+}
+
+404 Not Found:
+{
+  "error": "Resource not found"
+}
+
+500 Internal Server Error:
+{
+  "error": "Internal server error"
+}
+
+============================================================
+QUICK START
+============================================================
+
+1. Start the API server:
+   docker-compose up api
+
+   Or locally:
+   go run cmd/api/main.go
+
+2. Login to get JWT token:
+   curl -X POST http://localhost:8080/api/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"telegram_id": 123456789, "username": "test_user"}'
+
+3. Use the token in subsequent requests:
+   curl http://localhost:8080/api/v1/products \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+============================================================
+CORS
+============================================================
+
+CORS is enabled for all origins (*).
+For production, update middleware/cors.go to restrict origins.
+
+============================================================
