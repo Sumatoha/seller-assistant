@@ -90,7 +90,7 @@ func (r *ProductRepository) UpdatePrice(id string, newPrice float64, competitorM
 	return err
 }
 
-func (r *ProductRepository) GetProductsForDumping(userID int64) ([]domain.Product, error) {
+func (r *ProductRepository) GetProductsForDumping(userID string) ([]domain.Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -184,7 +184,7 @@ func (r *ProductRepository) GetByID(id string) (*domain.Product, error) {
 	return &product, nil
 }
 
-func (r *ProductRepository) GetByUserID(userID int64) ([]domain.Product, error) {
+func (r *ProductRepository) GetByUserID(userID string) ([]domain.Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -203,7 +203,7 @@ func (r *ProductRepository) GetByUserID(userID int64) ([]domain.Product, error) 
 	return products, nil
 }
 
-func (r *ProductRepository) GetLowStockProducts(userID int64, thresholdDays int) ([]domain.Product, error) {
+func (r *ProductRepository) GetLowStockProducts(userID string, thresholdDays int) ([]domain.Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -348,7 +348,7 @@ func (r *LowStockAlertRepository) Create(alert *domain.LowStockAlert) error {
 	return nil
 }
 
-func (r *LowStockAlertRepository) GetRecentAlerts(userID int64, hours int) ([]domain.LowStockAlert, error) {
+func (r *LowStockAlertRepository) GetRecentAlerts(userID string, hours int) ([]domain.LowStockAlert, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

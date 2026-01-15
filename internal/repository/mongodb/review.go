@@ -128,7 +128,7 @@ func (r *ReviewRepository) GetByID(id string) (*domain.Review, error) {
 	return &review, nil
 }
 
-func (r *ReviewRepository) GetPendingReviews(userID int64) ([]domain.Review, error) {
+func (r *ReviewRepository) GetPendingReviews(userID string) ([]domain.Review, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -152,7 +152,7 @@ func (r *ReviewRepository) GetPendingReviews(userID int64) ([]domain.Review, err
 	return reviews, nil
 }
 
-func (r *ReviewRepository) GetByUserID(userID int64, limit int) ([]domain.Review, error) {
+func (r *ReviewRepository) GetByUserID(userID string, limit int) ([]domain.Review, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

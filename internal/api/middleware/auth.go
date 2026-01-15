@@ -19,9 +19,8 @@ func InitJWTSecret(secret string) {
 
 // Claims represents JWT claims
 type Claims struct {
-	UserID     int64  `json:"user_id"`
-	TelegramID int64  `json:"telegram_id"`
-	Username   string `json:"username"`
+	UserID string `json:"user_id"` // MongoDB _id in hex format
+	Email  string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -60,8 +59,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 			// Add user info to context
 			c.Set("user_id", claims.UserID)
-			c.Set("telegram_id", claims.TelegramID)
-			c.Set("username", claims.Username)
+			c.Set("email", claims.Email)
 			c.Next()
 		} else {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
@@ -71,20 +69,20 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// GetUserID extracts user ID from context
-func GetUserID(c *gin.Context) int64 {
+// GetUserID extracts user ID from context (MongoDB _id in hex format)
+func GetUserID(c *gin.Context) string {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		return 0
+		return ""
 	}
-	return userID.(int64)
+	return userID.(string)
 }
 
-// GetTelegramID extracts telegram ID from context
-func GetTelegramID(c *gin.Context) int64 {
-	telegramID, exists := c.Get("telegram_id")
+// GetEmail extracts email from context
+func GetEmail(c *gin.Context) string {
+	email, exists := c.Get("email")
 	if !exists {
-		return 0
+		return ""
 	}
-	return telegramID.(int64)
+	return email.(string)
 }

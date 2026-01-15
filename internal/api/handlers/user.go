@@ -30,10 +30,10 @@ type UpdateSettingsRequest struct {
 // GetProfile returns user profile
 // GET /api/v1/user/profile
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	userID := middleware.GetUserID(c)
 
-	user, err := h.userRepo.GetByTelegramID(telegramID)
-	if err != nil {
+	user, err := h.userRepo.GetByID(userID)
+	if err != nil || user == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
@@ -44,7 +44,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // UpdateSettings updates user settings
 // PATCH /api/v1/user/settings
 func (h *UserHandler) UpdateSettings(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	userID := middleware.GetUserID(c)
 
 	var req UpdateSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -52,15 +52,15 @@ func (h *UserHandler) UpdateSettings(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userRepo.GetByTelegramID(telegramID)
-	if err != nil {
+	user, err := h.userRepo.GetByID(userID)
+	if err != nil || user == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
 	// Update settings
 	if req.AutoReplyEnabled != nil {
-		if err := h.userRepo.ToggleAutoReply(telegramID, *req.AutoReplyEnabled); err != nil {
+		if err := h.userRepo.ToggleAutoReply(userID, *req.AutoReplyEnabled); err != nil {
 			logger.Log.Error("Failed to toggle auto-reply", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update auto-reply"})
 			return
@@ -69,7 +69,7 @@ func (h *UserHandler) UpdateSettings(c *gin.Context) {
 	}
 
 	if req.AutoDumpingEnabled != nil {
-		if err := h.userRepo.ToggleAutoDumping(telegramID, *req.AutoDumpingEnabled); err != nil {
+		if err := h.userRepo.ToggleAutoDumping(userID, *req.AutoDumpingEnabled); err != nil {
 			logger.Log.Error("Failed to toggle auto-dumping", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update auto-dumping"})
 			return
@@ -87,8 +87,8 @@ func (h *UserHandler) UpdateSettings(c *gin.Context) {
 	}
 
 	// Return updated user
-	user, err = h.userRepo.GetByTelegramID(telegramID)
-	if err != nil {
+	user, err = h.userRepo.GetByID(userID)
+	if err != nil || user == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get updated user"})
 		return
 	}

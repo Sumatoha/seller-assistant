@@ -36,7 +36,7 @@ type DashboardStats struct {
 // GetStats returns dashboard statistics
 // GET /api/v1/dashboard/stats
 func (h *DashboardHandler) GetStats(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	stats := DashboardStats{}
 
@@ -88,7 +88,7 @@ func (h *DashboardHandler) GetStats(c *gin.Context) {
 // GetOverview returns dashboard overview with detailed data
 // GET /api/v1/dashboard/overview
 func (h *DashboardHandler) GetOverview(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	// Get products
 	products, err := h.productRepo.GetByUserID(telegramID)

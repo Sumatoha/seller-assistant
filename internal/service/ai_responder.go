@@ -57,14 +57,14 @@ func (s *AIResponderService) GenerateResponse(review *domain.Review) (string, er
 }
 
 // ProcessPendingReviews processes all pending reviews for a user
-func (s *AIResponderService) ProcessPendingReviews(userID int64, autoSend bool) error {
+func (s *AIResponderService) ProcessPendingReviews(userID string, autoSend bool) error {
 	reviews, err := s.reviewRepo.GetPendingReviews(userID)
 	if err != nil {
 		return fmt.Errorf("failed to get pending reviews: %w", err)
 	}
 
 	logger.Log.Info("Processing pending reviews",
-		zap.Int64("user_id", userID),
+		zap.String("user_id", userID),
 		zap.Int("count", len(reviews)),
 	)
 

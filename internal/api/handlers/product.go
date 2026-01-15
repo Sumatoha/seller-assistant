@@ -26,7 +26,7 @@ func NewProductHandler(productRepo domain.ProductRepository, priceDumpingService
 // GetProducts returns all user's products
 // GET /api/v1/products
 func (h *ProductHandler) GetProducts(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	products, err := h.productRepo.GetByUserID(telegramID)
 	if err != nil {
@@ -44,7 +44,7 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 // GetProduct returns single product by ID
 // GET /api/v1/products/:id
 func (h *ProductHandler) GetProduct(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 	productID := c.Param("id")
 
 	product, err := h.productRepo.GetByID(productID)
@@ -65,7 +65,7 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 // GetLowStockProducts returns products with low stock
 // GET /api/v1/products/low-stock
 func (h *ProductHandler) GetLowStockProducts(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	products, err := h.productRepo.GetLowStockProducts(telegramID, 7)
 	if err != nil {
@@ -90,7 +90,7 @@ type EnableDumpingRequest struct {
 // EnableDumping enables price dumping for a product
 // POST /api/v1/products/:id/dumping/enable
 func (h *ProductHandler) EnableDumping(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 	productID := c.Param("id")
 
 	var req EnableDumpingRequest
@@ -130,7 +130,7 @@ func (h *ProductHandler) EnableDumping(c *gin.Context) {
 // DisableDumping disables price dumping for a product
 // POST /api/v1/products/:id/dumping/disable
 func (h *ProductHandler) DisableDumping(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 	productID := c.Param("id")
 
 	// Verify product exists and ownership
@@ -164,7 +164,7 @@ func (h *ProductHandler) DisableDumping(c *gin.Context) {
 // GetDumpingProducts returns products with dumping enabled
 // GET /api/v1/products/dumping
 func (h *ProductHandler) GetDumpingProducts(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	products, err := h.productRepo.GetProductsForDumping(telegramID)
 	if err != nil {

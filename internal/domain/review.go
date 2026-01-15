@@ -4,7 +4,7 @@ import "time"
 
 type Review struct {
 	ID             string    `bson:"_id,omitempty" json:"id"`
-	UserID         int64     `bson:"user_id" json:"user_id"`
+	UserID         string    `bson:"user_id" json:"user_id"`
 	ProductID      string    `bson:"product_id,omitempty" json:"product_id,omitempty"` // Reference to Product._id
 	ExternalID     string    `bson:"external_id" json:"external_id"`                   // Kaspi review ID
 	AuthorName     string    `bson:"author_name" json:"author_name"`
@@ -21,7 +21,7 @@ type ReviewRepository interface {
 	Create(review *Review) error
 	Update(review *Review) error
 	GetByID(id string) (*Review, error)
-	GetPendingReviews(userID int64) ([]Review, error)
-	GetByUserID(userID int64, limit int) ([]Review, error)
+	GetPendingReviews(userID string) ([]Review, error)
+	GetByUserID(userID string, limit int) ([]Review, error)
 	UpsertReview(review *Review) error
 }

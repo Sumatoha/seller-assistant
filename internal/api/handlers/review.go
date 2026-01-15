@@ -26,7 +26,7 @@ func NewReviewHandler(reviewRepo domain.ReviewRepository, aiResponder *service.A
 // GetReviews returns all user's reviews
 // GET /api/v1/reviews
 func (h *ReviewHandler) GetReviews(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	// Query params
 	limit := 50
@@ -52,7 +52,7 @@ func (h *ReviewHandler) GetReviews(c *gin.Context) {
 // GetReview returns single review by ID
 // GET /api/v1/reviews/:id
 func (h *ReviewHandler) GetReview(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 	reviewID := c.Param("id")
 
 	review, err := h.reviewRepo.GetByID(reviewID)
@@ -73,7 +73,7 @@ func (h *ReviewHandler) GetReview(c *gin.Context) {
 // GetPendingReviews returns reviews without AI response
 // GET /api/v1/reviews/pending
 func (h *ReviewHandler) GetPendingReviews(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	reviews, err := h.reviewRepo.GetPendingReviews(telegramID)
 	if err != nil {
@@ -96,7 +96,7 @@ type GenerateReplyRequest struct {
 // GenerateReply generates AI response for a review
 // POST /api/v1/reviews/:id/generate-reply
 func (h *ReviewHandler) GenerateReply(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 	reviewID := c.Param("id")
 
 	var req GenerateReplyRequest
@@ -156,7 +156,7 @@ type UpdateReplyRequest struct {
 // UpdateReply updates AI response for a review (manual edit)
 // PATCH /api/v1/reviews/:id/reply
 func (h *ReviewHandler) UpdateReply(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 	reviewID := c.Param("id")
 
 	var req UpdateReplyRequest

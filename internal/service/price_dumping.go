@@ -49,7 +49,7 @@ func (s *PriceDumpingService) ProcessAllUsers() error {
 	for _, key := range keys {
 		if err := s.ProcessUserProducts(key.UserID, &key); err != nil {
 			logger.Log.Error("Failed to process user products",
-				zap.Int64("user_id", key.UserID),
+				zap.String("user_id", key.UserID),
 				zap.Error(err),
 			)
 			errorCount++
@@ -67,7 +67,7 @@ func (s *PriceDumpingService) ProcessAllUsers() error {
 }
 
 // ProcessUserProducts обрабатывает автодемпинг для товаров конкретного пользователя
-func (s *PriceDumpingService) ProcessUserProducts(userID int64, key *domain.KaspiKey) error {
+func (s *PriceDumpingService) ProcessUserProducts(userID string, key *domain.KaspiKey) error {
 	// Получаем товары для демпинга
 	products, err := s.productRepo.GetProductsForDumping(userID)
 	if err != nil {
@@ -75,12 +75,12 @@ func (s *PriceDumpingService) ProcessUserProducts(userID int64, key *domain.Kasp
 	}
 
 	if len(products) == 0 {
-		logger.Log.Debug("No products for dumping", zap.Int64("user_id", userID))
+		logger.Log.Debug("No products for dumping", zap.String("user_id", userID))
 		return nil
 	}
 
 	logger.Log.Info("Processing products for dumping",
-		zap.Int64("user_id", userID),
+		zap.String("user_id", userID),
 		zap.Int("products_count", len(products)),
 	)
 
@@ -111,7 +111,7 @@ func (s *PriceDumpingService) ProcessUserProducts(userID int64, key *domain.Kasp
 	}
 
 	logger.Log.Info("User products processed",
-		zap.Int64("user_id", userID),
+		zap.String("user_id", userID),
 		zap.Int("processed", processedCount),
 		zap.Int("updated", updatedCount),
 	)

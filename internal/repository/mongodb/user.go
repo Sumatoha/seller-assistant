@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserRepository struct {
@@ -37,17 +38,38 @@ func (r *UserRepository) Create(user *domain.User) error {
 	return nil
 }
 
-func (r *UserRepository) GetByTelegramID(telegramID int64) (*domain.User, error) {
+func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	var user domain.User
-	err := r.collection.FindOne(ctx, bson.M{"telegram_id": telegramID}).Decode(&user)
+	err := r.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepository) GetByID(id string) (*domain.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+
+	var user domain.User
+	err = r.collection.FindOne(ctx, bson.M{"_id": oid}).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user by ID: %w", err)
 	}
 
 	return &user, nil
@@ -66,7 +88,7 @@ func (r *UserRepository) Update(user *domain.User) error {
 
 	update := bson.M{
 		"$set": bson.M{
-			"username":           user.Username,
+			"email":              user.Email,
 			"first_name":         user.FirstName,
 			"last_name":          user.LastName,
 			"language_code":      user.LanguageCode,
@@ -79,9 +101,14 @@ func (r *UserRepository) Update(user *domain.User) error {
 	return err
 }
 
-func (r *UserRepository) ToggleAutoReply(userID int64, enabled bool) error {
+func (r *UserRepository) ToggleAutoReply(userID string, enabled bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	oid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return fmt.Errorf("invalid user ID: %w", err)
+	}
 
 	update := bson.M{
 		"$set": bson.M{
@@ -90,13 +117,18 @@ func (r *UserRepository) ToggleAutoReply(userID int64, enabled bool) error {
 		},
 	}
 
-	_, err := r.collection.UpdateOne(ctx, bson.M{"telegram_id": userID}, update)
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": oid}, update)
 	return err
 }
 
-func (r *UserRepository) ToggleAutoDumping(userID int64, enabled bool) error {
+func (r *UserRepository) ToggleAutoDumping(userID string, enabled bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	oid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return fmt.Errorf("invalid user ID: %w", err)
+	}
 
 	update := bson.M{
 		"$set": bson.M{
@@ -105,6 +137,27 @@ func (r *UserRepository) ToggleAutoDumping(userID int64, enabled bool) error {
 		},
 	}
 
-	_, err := r.collection.UpdateOne(ctx, bson.M{"telegram_id": userID}, update)
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": oid}, update)
 	return err
+}
+
+// EnsureIndexes creates necessary indexes for the users collection
+func (r *UserRepository) EnsureIndexes() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Unique index for email
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "email", Value: 1},
+		},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := r.collection.Indexes().CreateOne(ctx, indexModel)
+	if err != nil {
+		return fmt.Errorf("failed to create email index: %w", err)
+	}
+
+	return nil
 }

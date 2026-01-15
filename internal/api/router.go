@@ -11,13 +11,14 @@ import (
 
 // RouterConfig holds dependencies for router setup
 type RouterConfig struct {
-	UserRepo     domain.UserRepository
-	KaspiKeyRepo domain.KaspiKeyRepository
-	ProductRepo  domain.ProductRepository
-	ReviewRepo   domain.ReviewRepository
-	// PriceDumpingService *service.PriceDumpingService // Temporarily disabled
-	AIResponder *service.AIResponderService
-	Encryptor   *crypto.Encryptor
+	UserRepo           domain.UserRepository
+	KaspiKeyRepo       domain.KaspiKeyRepository
+	ProductRepo        domain.ProductRepository
+	ReviewRepo         domain.ReviewRepository
+	AIResponder        *service.AIResponderService
+	Encryptor          *crypto.Encryptor
+	JWTSecret          string
+	JWTExpirationHours int
 }
 
 // SetupRouter creates and configures the Gin router
@@ -36,16 +37,16 @@ func SetupRouter(cfg *RouterConfig) *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		// Initialize handlers
-		authHandler := handlers.NewAuthHandler(cfg.UserRepo)
+		authHandler := handlers.NewAuthHandler(cfg.UserRepo, cfg.JWTSecret, cfg.JWTExpirationHours)
 		userHandler := handlers.NewUserHandler(cfg.UserRepo)
 		kaspiKeyHandler := handlers.NewKaspiKeyHandler(cfg.KaspiKeyRepo, cfg.Encryptor)
 		productHandler := handlers.NewProductHandler(cfg.ProductRepo, nil) // Price dumping disabled
 		reviewHandler := handlers.NewReviewHandler(cfg.ReviewRepo, cfg.AIResponder)
 		dashboardHandler := handlers.NewDashboardHandler(cfg.ProductRepo, cfg.ReviewRepo)
 
-		// Public routes (no auth required)
 		auth := v1.Group("/auth")
 		{
+			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 		}
 

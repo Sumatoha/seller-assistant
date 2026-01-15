@@ -4,8 +4,8 @@ import "time"
 
 type User struct {
 	ID                 string    `bson:"_id,omitempty" json:"id"`
-	TelegramID         int64     `bson:"telegram_id" json:"telegram_id"`
-	Username           string    `bson:"username" json:"username"`
+	Email              string    `bson:"email" json:"email"`
+	PasswordHash       string    `bson:"password_hash" json:"-"`
 	FirstName          string    `bson:"first_name" json:"first_name"`
 	LastName           string    `bson:"last_name" json:"last_name"`
 	LanguageCode       string    `bson:"language_code" json:"language_code"`
@@ -17,8 +17,9 @@ type User struct {
 
 type UserRepository interface {
 	Create(user *User) error
-	GetByTelegramID(telegramID int64) (*User, error)
+	GetByEmail(email string) (*User, error)
+	GetByID(id string) (*User, error)
 	Update(user *User) error
-	ToggleAutoReply(userID int64, enabled bool) error
-	ToggleAutoDumping(userID int64, enabled bool) error
+	ToggleAutoReply(userID string, enabled bool) error
+	ToggleAutoDumping(userID string, enabled bool) error
 }

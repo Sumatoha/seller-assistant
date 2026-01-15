@@ -50,7 +50,7 @@ func (s *KaspiSyncService) SyncAll() error {
 	for _, key := range keys {
 		if err := s.SyncUserData(&key); err != nil {
 			logger.Log.Error("Failed to sync user data",
-				zap.Int64("user_id", key.UserID),
+				zap.String("user_id", key.UserID),
 				zap.Error(err),
 			)
 			// Continue with other users
@@ -89,20 +89,20 @@ func (s *KaspiSyncService) SyncUserData(key *domain.KaspiKey) error {
 	}
 
 	logger.Log.Info("User data synced successfully",
-		zap.Int64("user_id", key.UserID),
+		zap.String("user_id", key.UserID),
 	)
 
 	return nil
 }
 
-func (s *KaspiSyncService) syncProducts(userID int64, client *kaspi.Client) error {
+func (s *KaspiSyncService) syncProducts(userID string, client *kaspi.Client) error {
 	products, err := client.GetProducts()
 	if err != nil {
 		return fmt.Errorf("failed to fetch products: %w", err)
 	}
 
 	logger.Log.Info("Syncing products",
-		zap.Int64("user_id", userID),
+		zap.String("user_id", userID),
 		zap.Int("count", len(products)),
 	)
 
@@ -129,7 +129,7 @@ func (s *KaspiSyncService) syncProducts(userID int64, client *kaspi.Client) erro
 	return nil
 }
 
-func (s *KaspiSyncService) syncSalesData(userID int64, client *kaspi.Client) error {
+func (s *KaspiSyncService) syncSalesData(userID string, client *kaspi.Client) error {
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -7) // Last 7 days
 
@@ -139,7 +139,7 @@ func (s *KaspiSyncService) syncSalesData(userID int64, client *kaspi.Client) err
 	}
 
 	logger.Log.Info("Syncing sales data",
-		zap.Int64("user_id", userID),
+		zap.String("user_id", userID),
 		zap.Int("count", len(salesData)),
 	)
 
@@ -199,14 +199,14 @@ func (s *KaspiSyncService) syncSalesData(userID int64, client *kaspi.Client) err
 	return nil
 }
 
-func (s *KaspiSyncService) syncReviews(userID int64, client *kaspi.Client) error {
+func (s *KaspiSyncService) syncReviews(userID string, client *kaspi.Client) error {
 	reviews, err := client.GetReviews()
 	if err != nil {
 		return fmt.Errorf("failed to fetch reviews: %w", err)
 	}
 
 	logger.Log.Info("Syncing reviews",
-		zap.Int64("user_id", userID),
+		zap.String("user_id", userID),
 		zap.Int("count", len(reviews)),
 	)
 

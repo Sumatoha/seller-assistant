@@ -4,7 +4,7 @@ import "time"
 
 type Product struct {
 	ID                 string    `bson:"_id,omitempty" json:"id"`
-	UserID             int64     `bson:"user_id" json:"user_id"`
+	UserID             string    `bson:"user_id" json:"user_id"`
 	ExternalID         string    `bson:"external_id" json:"external_id"` // Kaspi product ID
 	SKU                string    `bson:"sku" json:"sku"`
 	Name               string    `bson:"name" json:"name"`
@@ -34,7 +34,7 @@ type SalesHistory struct {
 type LowStockAlert struct {
 	ID            string    `bson:"_id,omitempty" json:"id"`
 	ProductID     string    `bson:"product_id" json:"product_id"`
-	UserID        int64     `bson:"user_id" json:"user_id"`
+	UserID        string    `bson:"user_id" json:"user_id"`
 	ThresholdDays int       `bson:"threshold_days" json:"threshold_days"`
 	NotifiedAt    time.Time `bson:"notified_at" json:"notified_at"`
 	CreatedAt     time.Time `bson:"created_at" json:"created_at"`
@@ -45,9 +45,9 @@ type ProductRepository interface {
 	Update(product *Product) error
 	UpdatePrice(id string, newPrice float64, competitorMinPrice float64) error
 	GetByID(id string) (*Product, error)
-	GetByUserID(userID int64) ([]Product, error)
-	GetProductsForDumping(userID int64) ([]Product, error)
-	GetLowStockProducts(userID int64, thresholdDays int) ([]Product, error)
+	GetByUserID(userID string) ([]Product, error)
+	GetProductsForDumping(userID string) ([]Product, error)
+	GetLowStockProducts(userID string, thresholdDays int) ([]Product, error)
 	UpsertProduct(product *Product) error
 }
 
@@ -59,5 +59,5 @@ type SalesHistoryRepository interface {
 
 type LowStockAlertRepository interface {
 	Create(alert *LowStockAlert) error
-	GetRecentAlerts(userID int64, hours int) ([]LowStockAlert, error)
+	GetRecentAlerts(userID string, hours int) ([]LowStockAlert, error)
 }

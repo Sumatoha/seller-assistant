@@ -90,7 +90,7 @@ func (s *InventoryService) calculateSalesVelocity(salesHistory []domain.SalesHis
 }
 
 // ProcessLowStockAlerts checks for low stock and creates alerts
-func (s *InventoryService) ProcessLowStockAlerts(userID int64, thresholdDays int) error {
+func (s *InventoryService) ProcessLowStockAlerts(userID string, thresholdDays int) error {
 	products, err := s.productRepo.GetLowStockProducts(userID, thresholdDays)
 	if err != nil {
 		return fmt.Errorf("failed to get low stock products: %w", err)
@@ -126,7 +126,7 @@ func (s *InventoryService) ProcessLowStockAlerts(userID int64, thresholdDays int
 			}
 
 			logger.Log.Info("Created low stock alert",
-				zap.Int64("user_id", userID),
+				zap.String("user_id", userID),
 				zap.String("product_id", product.ID),
 				zap.String("product_name", product.Name),
 				zap.Int("days_of_stock", product.DaysOfStock),
@@ -138,7 +138,7 @@ func (s *InventoryService) ProcessLowStockAlerts(userID int64, thresholdDays int
 }
 
 // GetLowStockSummary returns a summary of low stock products
-func (s *InventoryService) GetLowStockSummary(userID int64, thresholdDays int) ([]domain.Product, error) {
+func (s *InventoryService) GetLowStockSummary(userID string, thresholdDays int) ([]domain.Product, error) {
 	products, err := s.productRepo.GetLowStockProducts(userID, thresholdDays)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get low stock products: %w", err)
@@ -148,7 +148,7 @@ func (s *InventoryService) GetLowStockSummary(userID int64, thresholdDays int) (
 }
 
 // RecalculateAllProducts recalculates days of stock for all user products
-func (s *InventoryService) RecalculateAllProducts(userID int64) error {
+func (s *InventoryService) RecalculateAllProducts(userID string) error {
 	products, err := s.productRepo.GetByUserID(userID)
 	if err != nil {
 		return fmt.Errorf("failed to get products: %w", err)

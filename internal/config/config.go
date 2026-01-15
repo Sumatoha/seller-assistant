@@ -9,15 +9,16 @@ import (
 )
 
 type Config struct {
-	MongoDBURI        string
-	MongoDBDatabase   string
-	TelegramBotToken  string
-	OpenAIAPIKey      string
-	EncryptionKey     string
-	Port              string
-	Environment       string
-	SyncIntervalHours int
-	LogLevel          string
+	MongoDBURI         string
+	MongoDBDatabase    string
+	OpenAIAPIKey       string
+	EncryptionKey      string
+	JWTSecret          string
+	JWTExpirationHours int
+	Port               string
+	Environment        string
+	SyncIntervalHours  int
+	LogLevel           string
 }
 
 func Load() (*Config, error) {
@@ -25,15 +26,16 @@ func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		MongoDBURI:        getEnv("MONGODB_URI", "mongodb://localhost:27017"),
-		MongoDBDatabase:   getEnv("MONGODB_DATABASE", "seller_assistant"),
-		TelegramBotToken:  getEnv("TELEGRAM_BOT_TOKEN", ""),
-		OpenAIAPIKey:      getEnv("OPENAI_API_KEY", ""),
-		EncryptionKey:     getEnv("ENCRYPTION_KEY", ""),
-		Port:              getEnv("PORT", "8080"),
-		Environment:       getEnv("ENVIRONMENT", "production"),
-		SyncIntervalHours: getEnvAsInt("SYNC_INTERVAL_HOURS", 6),
-		LogLevel:          getEnv("LOG_LEVEL", "info"),
+		MongoDBURI:         getEnv("MONGODB_URI", "mongodb://localhost:27017"),
+		MongoDBDatabase:    getEnv("MONGODB_DATABASE", "seller_assistant"),
+		OpenAIAPIKey:       getEnv("OPENAI_API_KEY", ""),
+		EncryptionKey:      getEnv("ENCRYPTION_KEY", ""),
+		JWTSecret:          getEnv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production"),
+		JWTExpirationHours: getEnvAsInt("JWT_EXPIRATION_HOURS", 168),
+		Port:               getEnv("PORT", "8080"),
+		Environment:        getEnv("ENVIRONMENT", "production"),
+		SyncIntervalHours:  getEnvAsInt("SYNC_INTERVAL_HOURS", 6),
+		LogLevel:           getEnv("LOG_LEVEL", "info"),
 	}
 
 	if err := cfg.validate(); err != nil {
@@ -50,14 +52,14 @@ func (c *Config) validate() error {
 	if c.MongoDBDatabase == "" {
 		return fmt.Errorf("MONGODB_DATABASE is required")
 	}
-	if c.TelegramBotToken == "" {
-		return fmt.Errorf("TELEGRAM_BOT_TOKEN is required")
-	}
 	if c.OpenAIAPIKey == "" {
 		return fmt.Errorf("OPENAI_API_KEY is required")
 	}
 	if c.EncryptionKey == "" {
 		return fmt.Errorf("ENCRYPTION_KEY is required")
+	}
+	if c.JWTSecret == "" {
+		return fmt.Errorf("JWT_SECRET is required")
 	}
 	return nil
 }

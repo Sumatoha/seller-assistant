@@ -40,7 +40,7 @@ type KaspiKeyResponse struct {
 // GetKey returns user's Kaspi key (without API key)
 // GET /api/v1/kaspi-key
 func (h *KaspiKeyHandler) GetKey(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	key, err := h.kaspiKeyRepo.GetByUserID(telegramID)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *KaspiKeyHandler) GetKey(c *gin.Context) {
 // CreateKey creates or updates Kaspi key
 // POST /api/v1/kaspi-key
 func (h *KaspiKeyHandler) CreateKey(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	var req CreateKaspiKeyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -142,7 +142,7 @@ func (h *KaspiKeyHandler) CreateKey(c *gin.Context) {
 // DeleteKey deletes user's Kaspi key
 // DELETE /api/v1/kaspi-key
 func (h *KaspiKeyHandler) DeleteKey(c *gin.Context) {
-	telegramID := middleware.GetTelegramID(c)
+	telegramID := middleware.GetUserID(c)
 
 	// Check if key exists
 	_, err := h.kaspiKeyRepo.GetByUserID(telegramID)

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/yourusername/seller-assistant/internal/api"
@@ -51,6 +50,11 @@ func main() {
 	productRepo := mongodb.NewProductRepository(db)
 	reviewRepo := mongodb.NewReviewRepository(db)
 
+	// Ensure MongoDB indexes
+	if err := userRepo.EnsureIndexes(); err != nil {
+		logger.Log.Warn("Failed to create user indexes", zap.Error(err))
+	}
+
 	// Initialize encryptor
 	encryptor, err := crypto.NewEncryptor(cfg.EncryptionKey)
 	if err != nil {
@@ -58,12 +62,7 @@ func main() {
 	}
 
 	// Initialize JWT middleware
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "your-super-secret-jwt-key-change-in-production"
-		logger.Log.Warn("Using default JWT secret. Set JWT_SECRET environment variable in production!")
-	}
-	middleware.InitJWTSecret(jwtSecret)
+	middleware.InitJWTSecret(cfg.JWTSecret)
 
 	// Initialize services
 	aiResponder := service.NewAIResponderService(cfg.OpenAIAPIKey, reviewRepo)
@@ -71,13 +70,14 @@ func main() {
 
 	// Setup router
 	routerCfg := &api.RouterConfig{
-		UserRepo:     userRepo,
-		KaspiKeyRepo: kaspiKeyRepo,
-		ProductRepo:  productRepo,
-		ReviewRepo:   reviewRepo,
-		// PriceDumpingService: priceDumpingService, // Temporarily disabled
-		AIResponder: aiResponder,
-		Encryptor:   encryptor,
+		UserRepo:           userRepo,
+		KaspiKeyRepo:       kaspiKeyRepo,
+		ProductRepo:        productRepo,
+		ReviewRepo:         reviewRepo,
+		AIResponder:        aiResponder,
+		Encryptor:          encryptor,
+		JWTSecret:          cfg.JWTSecret,
+		JWTExpirationHours: cfg.JWTExpirationHours,
 	}
 
 	router := api.SetupRouter(routerCfg)
@@ -96,7 +96,9 @@ func main() {
 
 	logger.Log.Info("Available endpoints:",
 		zap.String("health", "GET /health"),
+		zap.String("register", "POST /api/v1/auth/register"),
 		zap.String("login", "POST /api/v1/auth/login"),
+		zap.String("me", "GET /api/v1/auth/me (auth)"),
 		zap.String("profile", "GET /api/v1/user/profile (auth)"),
 		zap.String("products", "GET /api/v1/products (auth)"),
 		zap.String("reviews", "GET /api/v1/reviews (auth)"),

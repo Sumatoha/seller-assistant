@@ -37,7 +37,7 @@ func (r *KaspiKeyRepository) Create(key *domain.KaspiKey) error {
 	return nil
 }
 
-func (r *KaspiKeyRepository) GetByUserID(userID int64) (*domain.KaspiKey, error) {
+func (r *KaspiKeyRepository) GetByUserID(userID string) (*domain.KaspiKey, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -117,7 +117,7 @@ func (r *KaspiKeyRepository) Update(key *domain.KaspiKey) error {
 	return err
 }
 
-func (r *KaspiKeyRepository) Delete(userID int64) error {
+func (r *KaspiKeyRepository) Delete(userID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
