@@ -17,19 +17,28 @@ type Database struct {
 }
 
 func NewDB(mongoURI, dbName string) (*Database, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Increase timeout for cloud MongoDB (like Atlas)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI(mongoURI)
+	// Add timeout settings to client options
+	clientOptions := options.Client().
+		ApplyURI(mongoURI).
+		SetConnectTimeout(20 * time.Second).
+		SetServerSelectionTimeout(20 * time.Second)
+
+	fmt.Printf("[MongoDB] Connecting to MongoDB (database: %s)...\n", dbName)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 
+	fmt.Println("[MongoDB] Successfully connected, pinging database...")
 	// Ping the database
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
+	fmt.Println("[MongoDB] Ping successful!")
 
 	db := client.Database(dbName)
 
@@ -58,16 +67,8 @@ func (d *Database) CreateIndexes() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Users indexes
-	usersIndexes := []mongo.IndexModel{
-		{
-			Keys:    map[string]interface{}{"telegram_id": 1},
-			Options: options.Index().SetUnique(true),
-		},
-	}
-	if _, err := d.DB.Collection("users").Indexes().CreateMany(ctx, usersIndexes); err != nil {
-		return fmt.Errorf("failed to create users indexes: %w", err)
-	}
+	// Users indexes - email is already indexed in user repository
+	// No additional indexes needed here as email index is created in EnsureIndexes()
 
 	// Kaspi keys indexes
 	kaspiIndexes := []mongo.IndexModel{
