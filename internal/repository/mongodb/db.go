@@ -30,12 +30,15 @@ func NewDB(mongoURI, dbName string) (*Database, error) {
 	fmt.Printf("[MongoDB] Connecting to MongoDB (database: %s)...\n", dbName)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
+		fmt.Printf("[MongoDB] ERROR: Connection failed: %v\n", err)
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 
 	fmt.Println("[MongoDB] Successfully connected, pinging database...")
 	// Ping the database
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		fmt.Printf("[MongoDB] ERROR: Ping failed: %v\n", err)
+		fmt.Printf("[MongoDB] ERROR: Error type: %T\n", err)
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 	fmt.Println("[MongoDB] Ping successful!")
