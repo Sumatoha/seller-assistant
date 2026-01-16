@@ -34,3 +34,6 @@ COPY --from=builder /api .
 
 # Expose port (optional, for health checks)
 EXPOSE 8080
+
+# Run API server by default
+CMD ["/root/api"]
