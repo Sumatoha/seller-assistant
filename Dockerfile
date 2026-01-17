@@ -23,8 +23,8 @@ RUN CGO_ENABLED=1 GOOS=linux go build -o /api ./cmd/api
 # Final stage
 FROM alpine:latest
 
-# Install ca-certificates and libc for CGO binaries
-RUN apk --no-cache add ca-certificates tzdata libc6-compat
+# Install ca-certificates, libc for CGO binaries, and openssl for TLS
+RUN apk --no-cache add ca-certificates tzdata libc6-compat openssl libssl3 libcrypto3
 
 WORKDIR /root/
 
