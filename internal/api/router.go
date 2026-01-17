@@ -16,6 +16,7 @@ type RouterConfig struct {
 	ProductRepo        domain.ProductRepository
 	ReviewRepo         domain.ReviewRepository
 	AIResponder        *service.AIResponderService
+	SyncService        *service.KaspiSyncService
 	Encryptor          *crypto.Encryptor
 	JWTSecret          string
 	JWTExpirationHours int
@@ -39,7 +40,7 @@ func SetupRouter(cfg *RouterConfig) *gin.Engine {
 		// Initialize handlers
 		authHandler := handlers.NewAuthHandler(cfg.UserRepo, cfg.JWTSecret, cfg.JWTExpirationHours)
 		userHandler := handlers.NewUserHandler(cfg.UserRepo)
-		kaspiKeyHandler := handlers.NewKaspiKeyHandler(cfg.KaspiKeyRepo, cfg.Encryptor)
+		kaspiKeyHandler := handlers.NewKaspiKeyHandler(cfg.KaspiKeyRepo, cfg.Encryptor, cfg.SyncService)
 		productHandler := handlers.NewProductHandler(cfg.ProductRepo, nil) // Price dumping disabled
 		reviewHandler := handlers.NewReviewHandler(cfg.ReviewRepo, cfg.AIResponder)
 		dashboardHandler := handlers.NewDashboardHandler(cfg.ProductRepo, cfg.ReviewRepo)
@@ -70,6 +71,7 @@ func SetupRouter(cfg *RouterConfig) *gin.Engine {
 				kaspiKey.GET("", kaspiKeyHandler.GetKey)
 				kaspiKey.POST("", kaspiKeyHandler.CreateKey)
 				kaspiKey.DELETE("", kaspiKeyHandler.DeleteKey)
+				kaspiKey.POST("/sync", kaspiKeyHandler.SyncNow)
 			}
 
 			// Product endpoints

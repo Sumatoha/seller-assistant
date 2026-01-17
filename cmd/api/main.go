@@ -52,6 +52,8 @@ func main() {
 	kaspiKeyRepo := mongodb.NewKaspiKeyRepository(db)
 	productRepo := mongodb.NewProductRepository(db)
 	reviewRepo := mongodb.NewReviewRepository(db)
+	salesHistoryRepo := mongodb.NewSalesHistoryRepository(db)
+	lowStockAlertRepo := mongodb.NewLowStockAlertRepository(db)
 
 	// Ensure MongoDB indexes
 	if err := userRepo.EnsureIndexes(); err != nil {
@@ -69,6 +71,15 @@ func main() {
 
 	// Initialize services
 	aiResponder := service.NewAIResponderService(cfg.OpenAIAPIKey, reviewRepo)
+	inventoryService := service.NewInventoryService(productRepo, salesHistoryRepo, lowStockAlertRepo)
+	syncService := service.NewKaspiSyncService(
+		kaspiKeyRepo,
+		productRepo,
+		salesHistoryRepo,
+		reviewRepo,
+		encryptor,
+		inventoryService,
+	)
 	// priceDumpingService := service.NewPriceDumpingService(kaspiKeyRepo, productRepo, encryptor) // Temporarily disabled
 
 	// Setup router
@@ -78,6 +89,7 @@ func main() {
 		ProductRepo:        productRepo,
 		ReviewRepo:         reviewRepo,
 		AIResponder:        aiResponder,
+		SyncService:        syncService,
 		Encryptor:          encryptor,
 		JWTSecret:          cfg.JWTSecret,
 		JWTExpirationHours: cfg.JWTExpirationHours,
