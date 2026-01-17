@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"runtime"
 
 	"github.com/joho/godotenv"
 	"github.com/yourusername/seller-assistant/internal/api"
@@ -20,6 +21,8 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
+
+	log.Println("go version:", runtime.Version())
 
 	// Load config
 	cfg, err := config.Load()
