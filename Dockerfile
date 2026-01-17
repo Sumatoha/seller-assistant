@@ -1,39 +1,30 @@
 # Multi-stage build for smaller image size
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
-# Install build dependencies including musl for CGO
-RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev
+RUN apk add --no-cache ca-certificates
 
-# Set working directory
 WORKDIR /app
 
-# Copy go mod files
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy source code
 COPY . .
 
-# Build all binaries with CGO enabled for proper TLS/SSL support
-RUN CGO_ENABLED=1 GOOS=linux go build -o /worker ./cmd/worker
-RUN CGO_ENABLED=1 GOOS=linux go build -o /api ./cmd/api
+# Build binaries
+RUN go build -o /api ./cmd/api
+RUN go build -o /worker ./cmd/worker
 
 # Final stage
 FROM alpine:latest
 
-# Install ca-certificates, libc for CGO binaries, and openssl for TLS
-RUN apk --no-cache add ca-certificates tzdata libc6-compat openssl libssl3 libcrypto3
+RUN apk add --no-cache ca-certificates
 
-WORKDIR /root/
+WORKDIR /app
 
 # Copy binaries from builder
-COPY --from=builder /worker .
 COPY --from=builder /api .
+COPY --from=builder /worker .
 
-# Expose port (optional, for health checks)
 EXPOSE 8080
 
-# Run API server by default
-CMD ["/root/api"]
+CMD ["./api"]

@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"time"
 
@@ -22,17 +21,11 @@ func NewDB(mongoURI, dbName string) (*Database, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Configure TLS for MongoDB Atlas
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true, // Temporary workaround for Alpine Linux TLS issues
-	}
-
 	// Add timeout settings to client options
 	clientOptions := options.Client().
 		ApplyURI(mongoURI).
 		SetConnectTimeout(20 * time.Second).
-		SetServerSelectionTimeout(20 * time.Second).
-		SetTLSConfig(tlsConfig)
+		SetServerSelectionTimeout(20 * time.Second)
 
 	fmt.Printf("[MongoDB] Connecting to MongoDB (database: %s)...\n", dbName)
 	client, err := mongo.Connect(ctx, clientOptions)
