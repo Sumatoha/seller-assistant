@@ -1,8 +1,8 @@
 # Multi-stage build for smaller image size
 FROM golang:1.21-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache git ca-certificates tzdata
+# Install build dependencies including musl for CGO
+RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev
 
 # Set working directory
 WORKDIR /app
@@ -16,15 +16,15 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build all binaries
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /worker ./cmd/worker
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /api ./cmd/api
+# Build all binaries with CGO enabled for proper TLS/SSL support
+RUN CGO_ENABLED=1 GOOS=linux go build -o /worker ./cmd/worker
+RUN CGO_ENABLED=1 GOOS=linux go build -o /api ./cmd/api
 
 # Final stage
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates tzdata
+# Install ca-certificates and libc for CGO binaries
+RUN apk --no-cache add ca-certificates tzdata libc6-compat
 
 WORKDIR /root/
 
