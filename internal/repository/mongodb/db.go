@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -76,11 +77,11 @@ func (d *Database) CreateIndexes() error {
 	// Kaspi keys indexes
 	kaspiIndexes := []mongo.IndexModel{
 		{
-			Keys:    map[string]interface{}{"user_id": 1},
+			Keys:    bson.D{{Key: "user_id", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys: map[string]interface{}{"is_active": 1},
+			Keys: bson.D{{Key: "is_active", Value: 1}},
 		},
 	}
 	if _, err := d.DB.Collection("kaspi_keys").Indexes().CreateMany(ctx, kaspiIndexes); err != nil {
@@ -90,13 +91,13 @@ func (d *Database) CreateIndexes() error {
 	// Products indexes
 	productsIndexes := []mongo.IndexModel{
 		{
-			Keys: map[string]interface{}{"user_id": 1},
+			Keys: bson.D{{Key: "user_id", Value: 1}},
 		},
 		{
-			Keys: map[string]interface{}{"days_of_stock": 1},
+			Keys: bson.D{{Key: "days_of_stock", Value: 1}},
 		},
 		{
-			Keys:    map[string]interface{}{"user_id": 1, "external_id": 1},
+			Keys:    bson.D{{Key: "user_id", Value: 1}, {Key: "external_id", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
 	}
@@ -107,13 +108,13 @@ func (d *Database) CreateIndexes() error {
 	// Sales history indexes
 	salesIndexes := []mongo.IndexModel{
 		{
-			Keys: map[string]interface{}{"product_id": 1},
+			Keys: bson.D{{Key: "product_id", Value: 1}},
 		},
 		{
-			Keys: map[string]interface{}{"date": -1},
+			Keys: bson.D{{Key: "date", Value: -1}},
 		},
 		{
-			Keys:    map[string]interface{}{"product_id": 1, "date": 1},
+			Keys:    bson.D{{Key: "product_id", Value: 1}, {Key: "date", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
 	}
@@ -124,13 +125,13 @@ func (d *Database) CreateIndexes() error {
 	// Reviews indexes
 	reviewsIndexes := []mongo.IndexModel{
 		{
-			Keys: map[string]interface{}{"user_id": 1},
+			Keys: bson.D{{Key: "user_id", Value: 1}},
 		},
 		{
-			Keys: map[string]interface{}{"ai_response_sent": 1},
+			Keys: bson.D{{Key: "ai_response_sent", Value: 1}},
 		},
 		{
-			Keys:    map[string]interface{}{"user_id": 1, "external_id": 1},
+			Keys:    bson.D{{Key: "user_id", Value: 1}, {Key: "external_id", Value: 1}},
 			Options: options.Index().SetUnique(true),
 		},
 	}
@@ -141,13 +142,13 @@ func (d *Database) CreateIndexes() error {
 	// Low stock alerts indexes
 	alertsIndexes := []mongo.IndexModel{
 		{
-			Keys: map[string]interface{}{"user_id": 1},
+			Keys: bson.D{{Key: "user_id", Value: 1}},
 		},
 		{
-			Keys: map[string]interface{}{"product_id": 1},
+			Keys: bson.D{{Key: "product_id", Value: 1}},
 		},
 		{
-			Keys: map[string]interface{}{"notified_at": -1},
+			Keys: bson.D{{Key: "notified_at", Value: -1}},
 		},
 	}
 	if _, err := d.DB.Collection("low_stock_alerts").Indexes().CreateMany(ctx, alertsIndexes); err != nil {
